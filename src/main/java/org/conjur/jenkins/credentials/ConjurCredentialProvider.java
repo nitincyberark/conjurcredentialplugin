@@ -67,7 +67,7 @@ public class ConjurCredentialProvider extends CredentialsProvider {
     public <C extends Credentials> List<C> getCredentials(@Nonnull Class<C> type,
                                                           ItemGroup itemGroup,
                                                           Authentication authentication) {
-        LOGGER.log(Level.FINE, "getCredentials (3) type: " + type + " itemGroup: " + itemGroup);
+        LOGGER.log(Level.FINE, "getCredentials (3) type: " + type + " itemGroup: " + itemGroup.getAllItems());
         return getCredentialsFromSupplier(type, itemGroup, authentication);
     }
 
@@ -77,7 +77,7 @@ public class ConjurCredentialProvider extends CredentialsProvider {
 
         LOGGER.log(Level.FINE, "Type: " + type.getName() + 
             " authentication: " + authentication + " context: " + context.getDisplayName());        
-
+       
         if (!type.isInstance(CertificateCredentials.class) && (
              (type.isInstance(ConjurSecretCredentials.class) || type == ConjurSecretUsernameCredentials.class) ||
              type.isAssignableFrom(ConjurSecretCredentials.class) || 
@@ -92,6 +92,10 @@ public class ConjurCredentialProvider extends CredentialsProvider {
                 getStore(context);
                 if (currentCredentialSupplier != null) {
                     allCredentials = currentCredentialSupplier.get();
+                    LOGGER.log(Level.FINE, "To Fetch credentials size:>>>>>>>"+allCredentials.size()+">>>>>>>"+allCredentials.toString());
+                   // LOGGER.log(Level.FINE,">>>"+sc.getId()
+                    for(StandardCredentials sc: allCredentials)
+                    	LOGGER.log(Level.FINE,"ID>>>"+sc.getId()+" :DESC: "+sc.getDescription()+" :tostring: "+sc.toString());
                     return allCredentials.stream()
                             .filter(c -> type.isAssignableFrom(c.getClass()))
                             // cast to keep generics happy even though we are assignable
@@ -115,6 +119,7 @@ public class ConjurCredentialProvider extends CredentialsProvider {
         }
 
         if (object == Jenkins.get()) {
+        	 LOGGER.log(Level.FINE, "No Conjur object == Jenkins.get()");
             return null;
         }
         

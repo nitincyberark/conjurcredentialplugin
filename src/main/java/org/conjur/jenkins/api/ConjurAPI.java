@@ -87,14 +87,20 @@ public class ConjurAPI {
 
 		Request request = null;
 		if (conjurAuthn.login != null && conjurAuthn.apiKey != null) {
-			LOGGER.log(Level.FINE, "Authenticating with Conjur (authn)");
+			LOGGER.log(Level.FINE, "Authenticating with Conjur NITIN (authn)");
+			LOGGER.log(Level.FINE, "Authenticating with Conjur (authn):URL::"+conjurAuthn.applianceUrl+" ::authnPath:"+conjurAuthn.authnPath);
+			LOGGER.log(Level.FINE, "Authenticating with Conjur (authn):conjurAuthn.account::"+conjurAuthn.account);
+			LOGGER.log(Level.FINE, "Authenticating with Conjur (authn):conjurAuthn.apiKey::"+conjurAuthn.apiKey);
+			
 			request = new Request.Builder()
 				.url(String.format("%s/%s/%s/%s/authenticate", conjurAuthn.applianceUrl, conjurAuthn.authnPath,
 						conjurAuthn.account, URLEncoder.encode(conjurAuthn.login, "utf-8")))
 				.post(RequestBody.create(MediaType.parse("text/plain"), conjurAuthn.apiKey)).build();
 		} else if (conjurAuthn.authnPath != null & conjurAuthn.apiKey != null) {
 			String authnPath = conjurAuthn.authnPath.indexOf("/") == -1 ? "authn-jwt/" + conjurAuthn.authnPath : conjurAuthn.authnPath;
-			LOGGER.log(Level.FINE, "Authenticating with Conjur (JWT) authnPath={0}", authnPath);
+			LOGGER.log(Level.FINE, "Authenticating with NITIN Conjur (JWT) authnPath={0}", authnPath);
+			LOGGER.log(Level.FINE, "Authenticating with Conjur (authn):URL::"+conjurAuthn.applianceUrl+" ::acount:"+conjurAuthn.account);
+			LOGGER.log(Level.FINE, "Authenticating with Conjur (authn):conjurAuthn.apiKey::"+conjurAuthn.apiKey);
 			request = new Request.Builder()
 				.url(String.format("%s/%s/%s/authenticate", conjurAuthn.applianceUrl, authnPath,
 						conjurAuthn.account))
@@ -220,7 +226,10 @@ public class ConjurAPI {
         if (effectiveContext instanceof Run) {
             Run run = (Run) effectiveContext;
 			conjurJobConfig = (ConjurJITJobProperty) run.getParent().getProperty(ConjurJITJobProperty.class);
+			
+			LOGGER.log(Level.FINE, "conjurJobConfig conjurJobConfig credential 224 stored in Jenkins:"+(conjurJobConfig!=null?conjurJobConfig.getItem():null));
             contextObject = run.getParent();
+        	LOGGER.log(Level.FINE, "contextObject CONJUR-API contextObject credential 232 stored in Jenkins:"+(contextObject.getName()));
         } else if (effectiveContext instanceof AbstractItem) {
 			contextObject = (Item) effectiveContext;
 		}
@@ -236,9 +245,10 @@ public class ConjurAPI {
 			// Taking the configuration from the Job
 			return ConjurAPI.logConjurConfiguration(conjurJobConfig.getConjurConfiguration());
 		}
-
+		LOGGER.log(Level.FINE, "inheritedConjurConfiguration inheritedConjurConfiguration 241:"+effectiveContext.toString());
 		ConjurConfiguration inheritedConfig = inheritedConjurConfiguration(contextObject);
 		if (inheritedConfig != null) {
+			LOGGER.log(Level.FINE, "inheritedConjurConfiguration inheritedConjurConfiguration 244:"+inheritedConfig);
 			return ConjurAPI.logConjurConfiguration(inheritedConfig);
 		}
 
@@ -253,6 +263,7 @@ public class ConjurAPI {
 			FolderConjurConfiguration fconf = ((AbstractFolder<?>) g).getProperties()
 					.get(FolderConjurConfiguration.class);
 			if (!(fconf == null || fconf.getInheritFromParent())) {
+				LOGGER.log(Level.FINE, "inheritedConjurConfiguration inheritedConjurConf259iguration stored in Jenkins:"+fconf.getConjurConfiguration());
 				// take the folder Conjur Configuration
 				return fconf.getConjurConfiguration();
 			}

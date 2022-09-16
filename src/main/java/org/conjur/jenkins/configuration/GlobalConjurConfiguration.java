@@ -1,6 +1,7 @@
 package org.conjur.jenkins.configuration;
 
 import java.io.Serializable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
@@ -25,6 +26,8 @@ public class GlobalConjurConfiguration extends GlobalConfiguration implements Se
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private static final Logger LOGGER = Logger.getLogger(GlobalConjurConfiguration.class.getName());
 
 	private ConjurConfiguration conjurConfiguration;
 	private Boolean enableJWKS = false;
@@ -71,6 +74,7 @@ public class GlobalConjurConfiguration extends GlobalConfiguration implements Se
 		if (result == null) {
 			throw new IllegalStateException();
 		}
+		LOGGER.log(Level.FINE, "Global Conjur Configuration(1) : " + result.getClass().getName() + ": " + result.toString() + " => " + result.getId());
 		return result;
 	}
 

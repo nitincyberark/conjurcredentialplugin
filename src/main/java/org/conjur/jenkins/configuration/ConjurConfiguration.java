@@ -44,10 +44,12 @@ public class ConjurConfiguration extends AbstractDescribableImpl<ConjurConfigura
 	@Extension
 	public static class DescriptorImpl extends Descriptor<ConjurConfiguration> {
 		public ListBoxModel doFillCertificateCredentialIDItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
+			LOGGER.log(Level.FINE, "do Fill Credential IDItems(3) :");
 			return fillCredentialIDItemsWithClass(item, credentialsId, StandardCertificateCredentials.class);
 		}
 
 		public ListBoxModel doFillCredentialIDItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
+			LOGGER.log(Level.FINE, "do Fill Credential IDItems(1) : ");
 			return fillCredentialIDItemsWithClass(item, credentialsId, StandardUsernamePasswordCredentials.class);
 		}
 
@@ -58,6 +60,7 @@ public class ConjurConfiguration extends AbstractDescribableImpl<ConjurConfigura
 
 		@POST
 		public FormValidation doObtainJwtToken(@AncestorInPath Item item) throws IOException, ServletException {
+			LOGGER.log(Level.FINE, "do Fill Credential IDItems(2) : ");
 			JwtToken token = JwtToken.getUnsignedToken("pluginAction", item);
 			return FormValidation.ok("JWT Token: \n" + token.claim.toString(4));
 		}

@@ -94,14 +94,18 @@ public class JwtToken {
         }
 
         Authentication authentication = Jenkins.getAuthentication();
-
+        LOGGER.log(Level.FINE, "RootURL authentication => {0}", authentication.toString());
         String userId = authentication.getName();
+        LOGGER.log(Level.FINE, " JWT Authentication userId: "+userId);
 
         User user = User.get(userId, false, Collections.emptyMap());
+        
         String fullName = null;
         if(user != null) {
             fullName = user.getFullName();
             userId = user.getId();
+            LOGGER.log(Level.FINE, " user != null JWT Authentication fullName: "+fullName);
+            LOGGER.log(Level.FINE, " JWT Authentication userId>>>>>: "+userId);
             // Mailer.UserProperty p = user.getProperty(Mailer.UserProperty.class);
             // if(p!=null)
             //     email = p.getAddress();
@@ -110,6 +114,7 @@ public class JwtToken {
         String issuer = Jenkins.get().getRootUrl();
         if (issuer.substring(issuer.length() - 1).equals("/")) {
             issuer = issuer.substring(0, issuer.length() - 1);
+            LOGGER.log(Level.FINE, " issuer.substring ");
         }
         LOGGER.log(Level.FINEST, "RootURL => {0}", Jenkins.get().getRootUrl());
 
@@ -119,6 +124,9 @@ public class JwtToken {
         jwtToken.claim.put("iss", issuer);
         jwtToken.claim.put("sub", userId);
         jwtToken.claim.put("name", fullName);
+        LOGGER.log(Level.FINEST, "RootURL issuer=> {0}"+issuer);
+        LOGGER.log(Level.FINEST, "RootURL userId=> {0}"+userId);
+        LOGGER.log(Level.FINEST, "RootURL fullName=> {0}"+fullName);
         long currentTime = System.currentTimeMillis()/1000;
         jwtToken.claim.put("iat", currentTime);
         jwtToken.claim.put("exp", currentTime + GlobalConjurConfiguration.get().getTokenDurarionInSeconds());
@@ -127,61 +135,80 @@ public class JwtToken {
         LOGGER.log(Level.FINE, "Context => " + context);
 
         ModelObject contextObject = (ModelObject) context; 
-
+        LOGGER.log(Level.FINE, "contextObject => " + contextObject.getDisplayName());
         if (contextObject instanceof Run) {
+        	LOGGER.log(Level.FINE, "contextObject instance of Run");
             Run run = (Run) contextObject;
             jwtToken.claim.put("jenkins_build_number", run.getNumber());
             contextObject = run.getParent();
         }
 
         if (contextObject instanceof AbstractItem) {
-
+        	LOGGER.log(Level.FINE, " 146 contextObject instance of AbstractItem");
             if (contextObject instanceof Job) {
+            	LOGGER.log(Level.FINE, " 148 contextObject instance of JOB");
                 Job job = (Job) contextObject;
                 jwtToken.claim.put("jenkins_pronoun", job.getPronoun());
             }
 
             AbstractItem item = (AbstractItem) contextObject;
+            LOGGER.log(Level.FINE, "Context item root ditrectory=> " + item.getRootDir());
+            LOGGER.log(Level.FINE, "Context getFullDisplayName=> " + item.getFullDisplayName());
+            LOGGER.log(Level.FINE, "Context getSearchName=> " + item.getSearchName());
+            LOGGER.log(Level.FINE, "Context getSearchUrl=> " + item.getSearchUrl());
+            LOGGER.log(Level.FINE, "Context getAbsoluteUrl=> " + item.getAbsoluteUrl());
+            LOGGER.log(Level.FINE, "Context getUrl=> " + item.getUrl());
+            LOGGER.log(Level.FINE, "Context getUrl=> " + item.toString());
             jwtToken.claim.put("jenkins_full_name", item.getFullName());
-            jwtToken.claim.put("jenkins_name", item.getName());
+           // jwtToken.claim.put("jenkins_name", item.getName());
             jwtToken.claim.put("jenkins_task_noun", item.getTaskNoun());
             if (item instanceof ItemGroup) {
+            	 LOGGER.log(Level.FINE, " 165 item instanceof ItemGroup");
                 ItemGroup itemGroup = (ItemGroup) item;
                 jwtToken.claim.put("jenkins_url_child_prefix", itemGroup.getUrlChildPrefix());
             }
             if (item instanceof Job) {
+            	LOGGER.log(Level.FINE, " 170 item instanceof Job"); 
                 Job job = (Job) item;
                 jwtToken.claim.put("jenkins_job_buildir", job.getBuildDir().getAbsolutePath());
             }
 
             ItemGroup parent = item.getParent();
             if (parent != null && parent instanceof AbstractItem) {
+            	LOGGER.log(Level.FINE, "177 parent != null && parent instanceof AbstractItem");
                 item =  (AbstractItem) parent;
+                //added
+                jwtToken.claim.put("jenkins_name", item.getName());
+                jwtToken.claim.put("jenkins_full_name", item.getName());
                 jwtToken.claim.put("jenkins_parent_full_name", item.getFullName());
                 jwtToken.claim.put("jenkins_parent_name", item.getName());
                 jwtToken.claim.put("jenkins_parent_task_noun", item.getTaskNoun());
                 if (item instanceof ItemGroup) {
+                	LOGGER.log(Level.FINE, "parent != null && parent instanceof AbstractItem >>>>>>> &&  item instanceof ItemGroup");
                     ItemGroup itemGroup = (ItemGroup) item;
                     jwtToken.claim.put("jenkins_parent_url_child_prefix", itemGroup.getUrlChildPrefix());
                 }
                 if (item instanceof Job) {
+                	LOGGER.log(Level.FINE, "parent != null && parent instanceof Abstract && item instanceof Job");
                     Job job = (Job) item;
                     jwtToken.claim.put("jenkins_parent_pronoun", job.getPronoun());
                 }
             }
-
+           
             // Add identity field
             List<String> identityFields = Arrays.asList(globalConfig.getIdentityFormatFieldsFromToken().split(","));
             String fieldSeparator = globalConfig.getIdentityFieldsSeparator();
             StringBuffer identityValue = new StringBuffer();
             for (String identityField : identityFields) {
+            	 LOGGER.log(Level.FINE , " 201 identityField : >>>> "+identityField);
                 if (jwtToken.claim.has(identityField)) {
                     String fieldValue = jwtToken.claim.getString(identityField);
+                    LOGGER.log(Level.FINE , " 204 fieldValue : >>>> "+fieldValue);
                     if (identityValue.length() != 0) identityValue.append(fieldSeparator);
                     identityValue.append(fieldValue);
                 }
             }
-            if (identityValue.length() > 0) jwtToken.claim.put(globalConfig.getidentityFieldName(), identityValue);
+            if (identityValue.length() > 0) jwtToken.claim.put(globalConfig.getidentityFieldName(),identityValue );
 
         }
         return jwtToken;

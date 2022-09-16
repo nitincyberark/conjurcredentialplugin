@@ -66,7 +66,7 @@ public class CredentialsSupplier implements Supplier<Collection<StandardCredenti
 
             ConjurAPI.ConjurAuthnInfo conjurAuthn = ConjurAPI.getConjurAuthnInfo(conjurConfiguration, null, getContext());
 
-            LOGGER.log(Level.FINE, "Fetching variables from Conjur");
+            LOGGER.log(Level.FINE, "Fetching variables from Conjur: conjurConfiguration: "+conjurConfiguration.getCredentialID());
             Request request = new Request.Builder().url(
                     String.format("%s/resources/%s?kind=variable&limit=1000", conjurAuthn.applianceUrl, conjurAuthn.account))
                     .get().addHeader("Authorization", "Token token=\"" + authToken + "\"").build();
