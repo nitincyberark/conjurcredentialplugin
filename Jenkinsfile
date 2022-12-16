@@ -1,1 +1,19 @@
-buildPlugin(configurations: buildPlugin.recommendedConfigurations())
+pipeline{
+
+  agent any
+
+  stages{
+
+    stage("clone"){
+
+      steps{
+
+          echo "Hello Team"
+
+       }
+
+    }
+
+  }
+
+}
